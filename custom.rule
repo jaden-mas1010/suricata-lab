@@ -1,0 +1,18 @@
+# =========================================
+# Suricata Custom Rules
+# =========================================
+
+# 1. Detect HTTP GET requests
+alert http $HOME_NET any -> $EXTERNAL_NET any (msg:"GET on wire"; flow:established,to_server; content:"GET"; http_method; sid:100001; rev:1;)
+
+# 2. Detect suspicious User-Agent in HTTP requests
+alert http $HOME_NET any -> $EXTERNAL_NET any (msg:"BAD USER-AGENT"; flow:established,to_server; content:"Mozilla/5.0"; http_user_agent; sid:100002; rev:1;)
+
+# 3. Detect ICMP ping requests
+alert icmp $HOME_NET any -> $EXTERNAL_NET any (msg:"ICMP Ping detected"; sid:100003; rev:1;)
+
+# 4. Pass traffic from a trusted host
+pass ip 192.168.1.10 any -> $EXTERNAL_NET any (msg:"Allow traffic from trusted host"; sid:100004; rev:1;)
+
+# 5. Drop Telnet traffic (TCP port 23) if using IPS mode
+drop tcp $HOME_NET any -> $EXTERNAL_NET 23 (msg:"Blocked Telnet traffic"; sid:100005; rev:1;)
