@@ -1,18 +1,33 @@
 # =========================================
-# Suricata Custom Rules
+# Suricata Custom Rules 
 # =========================================
 
 # 1. Detect HTTP GET requests
-alert http $HOME_NET any -> $EXTERNAL_NET any (msg:"GET on wire"; flow:established,to_server; content:"GET"; http_method; sid:100001; rev:1;)
+alert http $HOME_NET any -> $EXTERNAL_NET any (msg:"HTTP GET request detected"; flow:established,to_server; content:"GET"; http_method; sid:100001; rev:1;)
 
-# 2. Detect suspicious User-Agent in HTTP requests
-alert http $HOME_NET any -> $EXTERNAL_NET any (msg:"BAD USER-AGENT"; flow:established,to_server; content:"Mozilla/5.0"; http_user_agent; sid:100002; rev:1;)
+# 2. Detect HTTP POST requests
+alert http $HOME_NET any -> $EXTERNAL_NET any (msg:"HTTP POST request detected"; flow:established,to_server; content:"POST"; http_method; sid:100002; rev:1;)
 
-# 3. Detect ICMP ping requests
-alert icmp $HOME_NET any -> $EXTERNAL_NET any (msg:"ICMP Ping detected"; sid:100003; rev:1;)
+# 3. Detect suspicious User-Agent strings
+alert http $HOME_NET any -> $EXTERNAL_NET any (msg:"Suspicious User-Agent"; flow:established,to_server; content:"Mozilla/5.0"; http_user_agent; sid:100003; rev:1;)
 
-# 4. Pass traffic from a trusted host
-pass ip 192.168.1.10 any -> $EXTERNAL_NET any (msg:"Allow traffic from trusted host"; sid:100004; rev:1;)
+# 4. Detect ICMP ping requests
+alert icmp $HOME_NET any -> $EXTERNAL_NET any (msg:"ICMP Ping detected"; sid:100004; rev:1;)
 
-# 5. Drop Telnet traffic (TCP port 23) if using IPS mode
-drop tcp $HOME_NET any -> $EXTERNAL_NET 23 (msg:"Blocked Telnet traffic"; sid:100005; rev:1;)
+# 5. Detect DNS queries for suspicious domains
+alert dns $HOME_NET any -> $EXTERNAL_NET any (msg:"Suspicious DNS query"; content:"malicious.com"; nocase; sid:100005; rev:1;)
+
+# 6. Pass traffic from a trusted host
+pass ip 192.168.1.10 any -> $EXTERNAL_NET any (msg:"Allow traffic from trusted host"; sid:100006; rev:1;)
+
+# 7. Drop Telnet traffic (TCP port 23) - IPS mode only
+drop tcp $HOME_NET any -> $EXTERNAL_NET 23 (msg:"Blocked Telnet traffic"; sid:100007; rev:1;)
+
+# 8. Alert on SSH login attempts from external sources
+alert tcp $EXTERNAL_NET any -> $HOME_NET 22 (msg:"SSH login attempt detected"; flow:to_server; sid:100008; rev:1;)
+
+# 9. Detect HTTP requests to suspicious paths
+alert http $HOME_NET any -> $EXTERNAL_NET any (msg:"Suspicious HTTP path access"; uricontent:"/admin"; sid:100009; rev:1;)
+
+# 10. Detect FTP login attempts
+alert tcp $HOME_NET any -> $EXTERNAL_NET 21 (msg:"FTP login attempt"; flow:established,to_server; sid:100010; rev:1;)
